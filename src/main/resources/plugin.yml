@@ -1,0 +1,4 @@
+name: Civilization
+version: '${project.version}'
+main: com.redmagic.civilization.CivilizationPlugin
+api-version: 1.19
