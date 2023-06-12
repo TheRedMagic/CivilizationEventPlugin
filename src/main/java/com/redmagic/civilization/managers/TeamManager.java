@@ -1,5 +1,6 @@
-package com.redmagic.civilization;
+package com.redmagic.civilization.managers;
 
+import com.redmagic.civilization.CivilizationPlugin;
 import com.redmagic.civilization.util.Event.PlayerJoinTeamEvent;
 import com.redmagic.civilization.util.HexColor;
 import com.redmagic.civilization.util.Team;
@@ -8,8 +9,10 @@ import lombok.NonNull;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.Scoreboard;
 
 import java.awt.*;
 import java.io.File;
@@ -103,8 +106,9 @@ public class TeamManager {
                 }
             }
 
+            Scoreboard board = plugin.getScoreboard();
 
-            TeamMap.put(id, new Team(id, inTeam, alive, location, color));
+            TeamMap.put(id, new Team(id, inTeam, alive, location, color, board.registerNewTeam("cicilization_" + id)));
         }
 
     }
@@ -147,6 +151,12 @@ public class TeamManager {
 
     public void removeTeam(int Id){
         if (TeamMap.containsKey(Id)){
+            TeamMap.get(Id).getInTeam().forEach(uuid -> {
+                OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(uuid);
+
+                TeamMap.get(Id).getTeam().removePlayer(offlinePlayer);
+            });
+
             TeamMap.remove(Id);
 
             FileConfiguration fileConfiguration = plugin.getTeamsFile();
@@ -210,6 +220,7 @@ public class TeamManager {
                     inTeam.add(player.getUniqueId());
                     team.setInTeam(inTeam);
                     team.setAlive(team.getAlive()+1);
+                    team.getTeam().addPlayer(player);
                     player.teleport(team.getTeamSpawnLocation());
 
 
@@ -225,5 +236,17 @@ public class TeamManager {
 
 
         return true;
+    }
+
+    public Team UUIDtoTeam(UUID uuid){
+
+        final Team[] team = {null};
+
+        TeamMap.forEach((integer, team1) -> {
+            if (team1.getInTeam().contains(uuid)) {
+                team[0] = team1;
+            }
+        });
+        return team[0];
     }
 }

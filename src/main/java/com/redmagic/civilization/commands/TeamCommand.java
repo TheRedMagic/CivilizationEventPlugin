@@ -10,6 +10,9 @@ import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.ScoreboardManager;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -26,7 +29,7 @@ public class TeamCommand extends Command {
 
     @Override
     public void execute(CommandSender sender, String[] args) {
-        if (args.length >= 3){
+        if (args.length >= 1){
             switch (args[0]){
                 case "team":
                     try {
@@ -119,8 +122,10 @@ public class TeamCommand extends Command {
                         Random obj = new Random();
                         int rand_num = obj.nextInt(0xffffff + 1);
                         String colorCode = String.format("#%06x", rand_num);
+                        Scoreboard board = plugin.getScoreboard();
+                        int id = plugin.getTeamManager().findId();
 
-                        Team team = new Team(plugin.getTeamManager().findId(), new ArrayList<>(), 0, ((Player) sender).getLocation(), net.md_5.bungee.api.ChatColor.of(colorCode));
+                        Team team = new Team(id, new ArrayList<>(), 0, ((Player) sender).getLocation(), net.md_5.bungee.api.ChatColor.of(colorCode), board.registerNewTeam("civilization_" + id));
 
                         plugin.getTeamManager().addTeam(team);
 
@@ -149,6 +154,12 @@ public class TeamCommand extends Command {
                         }
                     }
                     break;
+            }
+        }else {
+            if (sender instanceof Player){
+                sender.sendMessage(ChatColor.RED + "Invalid usage.");
+            }else {
+                Bukkit.getLogger().info("Invalid usage.");
             }
         }
     }
